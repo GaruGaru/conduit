@@ -44,4 +44,4 @@ docker run \
 
 ```bash
 go get -u github.com/garugaru/conduit
-```bash
+``` 
