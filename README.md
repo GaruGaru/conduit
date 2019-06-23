@@ -2,6 +2,8 @@
 
 ## Minimal cli for transferring messages on sqs 
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/GaruGaru/flaw)](https://goreportcard.com/report/github.com/GaruGaru/flaw)
+
 ### Usage 
 
 #### Transfer messages from queues 
