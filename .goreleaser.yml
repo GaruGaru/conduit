@@ -13,11 +13,6 @@ archives:
     amd64: x86_64
   format: binary
 
-dockers:
--
-  image_templates:
-    - "garugaru/conduit:latest"
-    - "garugaru/conduit:{{ .Tag }}"
 
 checksum:
   name_template: 'checksums.txt'
