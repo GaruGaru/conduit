@@ -25,3 +25,19 @@ cat file.txt | xargs conduit publish --destination=<destination_sqs_url>
 ```
 
 
+### Run with docker
+
+```bash
+docker run \
+ -e AWS_REGION=<region> \
+ -e AWS_ACCESS_KEY_ID=<access-key> \
+ -e AWS_SECRET_ACCESS_KEY=<secret> \
+ garugaru/conduit <command>
+```
+
+### Install from source
+
+
+```bash
+go get -u github.com/garugaru/conduit
+```bash
