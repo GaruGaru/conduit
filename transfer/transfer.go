@@ -42,7 +42,7 @@ func New(sqs *sqs.SQS, sourceQueue string, destinationQueue string, delete bool,
 
 func (t *Job) workerFn(wg *sync.WaitGroup) {
 	defer wg.Done()
-	for ; ; {
+	for {
 		select {
 		case <-t.terminationCh:
 			return

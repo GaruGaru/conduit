@@ -6,12 +6,12 @@ import (
 )
 
 type Deleter struct {
-	Sqs   *sqs.SQS
+	Sqs *sqs.SQS
 }
 
-func NewDeleter(  SQS *sqs.SQS) *Deleter {
+func NewDeleter(SQS *sqs.SQS) *Deleter {
 	return &Deleter{
-		Sqs:   SQS,
+		Sqs: SQS,
 	}
 }
 
@@ -34,7 +34,7 @@ func (d *Deleter) Delete(messages []*sqs.Message, queue string) error {
 	}
 
 	if len(deleteOut.Failed) != 0 {
-		 return fmt.Errorf("failed delete %d / %d messages", len(deleteOut.Failed), len(messages))
+		return fmt.Errorf("failed delete %d / %d messages", len(deleteOut.Failed), len(messages))
 	}
 
 	return err
