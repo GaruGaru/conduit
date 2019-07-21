@@ -32,7 +32,7 @@ cat file.txt | xargs conduit publish --destination=<destination_sqs_url>
 ### Run with docker
 
 ```bash
-docker run \
+docker run -it \
  -e AWS_REGION=<region> \
  -e AWS_ACCESS_KEY_ID=<access-key> \
  -e AWS_SECRET_ACCESS_KEY=<secret> \
