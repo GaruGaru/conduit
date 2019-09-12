@@ -20,6 +20,7 @@ var (
 	transferSourceQueue        string
 	transferDestinationQueue   string
 	transferConcurrency        int
+	transferBatchSize          int
 	transferDeleteAfterPublish bool
 )
 
@@ -28,6 +29,7 @@ func init() {
 	transferCmd.PersistentFlags().StringVarP(&transferSourceQueue, "source", "s", "", "sqs source queue")
 	transferCmd.PersistentFlags().StringVarP(&transferDestinationQueue, "destination", "d", "", "sqs destination queue")
 	transferCmd.PersistentFlags().IntVarP(&transferConcurrency, "concurrency", "c", 1, "transfer number of workers")
+	transferCmd.PersistentFlags().IntVarP(&transferBatchSize, "batch", "b", 10, "transfer messages batch size (max 10)")
 	transferCmd.PersistentFlags().BoolVarP(&transferDeleteAfterPublish, "delete", "e", true, "delete message after publish")
 
 	cobra.MarkFlagRequired(transferCmd.PersistentFlags(), "source")
@@ -43,7 +45,7 @@ func runTransfer(cmd *cobra.Command, args []string) {
 
 	sqsClient := sqs.New(sess)
 
-	transferJob := transfer.New(sqsClient, transferSourceQueue, transferDestinationQueue, transferDeleteAfterPublish, transferConcurrency)
+	transferJob := transfer.New(sqsClient, transferSourceQueue, transferDestinationQueue, transferDeleteAfterPublish, transferConcurrency, transferBatchSize)
 
 	transferJob.RunAsync(func() {
 		fmt.Println("completed")

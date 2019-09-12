@@ -1,7 +1,7 @@
 package aws
 
 import (
-	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/satori/go.uuid"
@@ -46,7 +46,7 @@ func (p *Publisher) Redeliver(messages []*sqs.Message, queue string) error {
 		}
 	}
 
-	out, err := p.Sqs.SendMessageBatch(
+	_, err := p.Sqs.SendMessageBatch(
 		&sqs.SendMessageBatchInput{
 			QueueUrl: &queue,
 			Entries:  batch,
@@ -57,9 +57,10 @@ func (p *Publisher) Redeliver(messages []*sqs.Message, queue string) error {
 		return err
 	}
 
-	if len(out.Failed) != 0 {
-		return fmt.Errorf("failed publish of %d / %d messages", len(out.Failed), len(batch))
-	}
+
+	//if len(out.Failed) != 0 {
+	//	return fmt.Errorf("failed publish of %d / %d messages", len(out.Failed), len(batch))
+	//}
 
 	return nil
 }

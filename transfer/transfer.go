@@ -13,6 +13,7 @@ type Job struct {
 	DestinationQueue string
 	Delete           bool
 	Concurrency      int
+	batchSize        int
 	retriever        aws.Retriever
 	deleter          aws.Deleter
 	publisher        aws.Publisher
@@ -20,7 +21,7 @@ type Job struct {
 	errorsCh         chan error
 }
 
-func New(sqs *sqs.SQS, sourceQueue string, destinationQueue string, delete bool, concurrency int) *Job {
+func New(sqs *sqs.SQS, sourceQueue string, destinationQueue string, delete bool, concurrency int, batchSize int) *Job {
 
 	if concurrency <= 0 {
 		panic("invalid concurrency " + strconv.Itoa(concurrency))
@@ -37,6 +38,7 @@ func New(sqs *sqs.SQS, sourceQueue string, destinationQueue string, delete bool,
 		publisher:        *aws.NewPublisher(sqs),
 		terminationCh:    make(chan struct{}),
 		errorsCh:         make(chan error, concurrency),
+		batchSize:        batchSize,
 	}
 }
 
@@ -59,7 +61,11 @@ func (t *Job) workerFn(wg *sync.WaitGroup) {
 				return
 			}
 
-			err = t.publisher.Redeliver(messages, t.DestinationQueue)
+			batches := splitEvenly(messages, t.batchSize)
+
+			for _, b := range batches {
+				err = t.publisher.Redeliver(b, t.DestinationQueue)
+			}
 
 			if err != nil {
 				t.errorsCh <- err
@@ -78,6 +84,22 @@ func (t *Job) workerFn(wg *sync.WaitGroup) {
 		}
 
 	}
+}
+
+func splitEvenly(array []*sqs.Message, size int) [][]*sqs.Message {
+	var chunk []*sqs.Message
+	chunks := make([][]*sqs.Message, 0, len(array)/size+1)
+
+	for len(array) >= size {
+		chunk, array = array[:size], array[size:]
+		chunks = append(chunks, chunk)
+	}
+
+	if len(array) > 0 {
+		chunks = append(chunks, array[:len(array)])
+	}
+
+	return chunks
 }
 
 func (t *Job) Interrupt() {
