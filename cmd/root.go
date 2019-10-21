@@ -11,6 +11,14 @@ var rootCmd = &cobra.Command{
 	Short: "Sqs is really nice project",
 }
 
+var (
+	nonInteractiveMode bool
+)
+
+func init () {
+	rootCmd.PersistentFlags().BoolVarP(&nonInteractiveMode, "non-interactive", "n", false, "Run in non interactive mode")
+}
+
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
