@@ -47,6 +47,16 @@ func runTransfer(cmd *cobra.Command, args []string) {
 
 	transferJob := transfer.New(sqsClient, transferSourceQueue, transferDestinationQueue, transferDeleteAfterPublish, transferConcurrency, transferBatchSize)
 
+	if nonInteractiveMode {
+		fmt.Println("transfer running...")
+		err := transferJob.Run()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("completed")
+		return
+	}
+
 	transferJob.RunAsync(func() {
 		fmt.Println("completed")
 		os.Exit(0)
