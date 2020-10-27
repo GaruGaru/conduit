@@ -7,9 +7,7 @@ import (
 
 func Test(t *testing.T) {
 
-	worker := AsciiProgressWorker{}
-
-	worker.StartWithMax(20)
+	worker := NewAsciiProgressWorker(20)
 
 	for i := 1; i <= 20; i++ {
 		worker.SetCurrent(int64(i))
