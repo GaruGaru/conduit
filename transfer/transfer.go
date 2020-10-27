@@ -1,7 +1,9 @@
 package transfer
 
 import (
+	"fmt"
 	"github.com/GaruGaru/conduit/aws"
+	"github.com/GaruGaru/conduit/progress"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"strconv"
 	"sync"
@@ -17,6 +19,7 @@ type Job struct {
 	retriever        aws.Retriever
 	deleter          aws.Deleter
 	publisher        aws.Publisher
+	progressWorker   progress.ProgressWorker
 	terminationCh    chan struct{}
 	errorsCh         chan error
 }
@@ -27,18 +30,26 @@ func New(sqs *sqs.SQS, sourceQueue string, destinationQueue string, delete bool,
 		panic("invalid concurrency " + strconv.Itoa(concurrency))
 	}
 
+	retriever := *aws.NewRetriever(aws.NewSQSWrapperImpl(sqs))
+	messages, err := retriever.GetApproximateNumberOfMessages(sourceQueue)
+
+	if err != nil {
+		panic(fmt.Sprintf("can't estimate queue size %s", sourceQueue))
+	}
+
 	return &Job{
 		Sqs:              sqs,
 		SourceQueue:      sourceQueue,
 		DestinationQueue: destinationQueue,
 		Delete:           delete,
 		Concurrency:      concurrency,
-		retriever:        *aws.NewRetriever(sqs),
+		retriever:        retriever,
 		deleter:          *aws.NewDeleter(sqs),
 		publisher:        *aws.NewPublisher(sqs),
 		terminationCh:    make(chan struct{}),
 		errorsCh:         make(chan error, concurrency),
 		batchSize:        batchSize,
+		progressWorker:   progress.NewAsciiProgressWorker(messages),
 	}
 }
 
@@ -66,6 +77,14 @@ func (t *Job) workerFn(wg *sync.WaitGroup) {
 			for _, b := range batches {
 				err = t.publisher.Redeliver(b, t.DestinationQueue)
 			}
+
+			projection := int64(len(messages)) + t.progressWorker.GetCurrent()
+
+			if projection > t.progressWorker.GetMax() {
+				projection = t.progressWorker.GetMax()
+			}
+
+			t.progressWorker.SetCurrent(projection)
 
 			if err != nil {
 				t.errorsCh <- err
@@ -107,6 +126,7 @@ func (t *Job) Interrupt() {
 }
 
 func (t *Job) RunAsync(onCompleteFn func(), onErrorFn func(error)) {
+
 	go func() {
 
 		err := t.Run()
@@ -114,6 +134,7 @@ func (t *Job) RunAsync(onCompleteFn func(), onErrorFn func(error)) {
 		if err != nil {
 			onErrorFn(err)
 		} else {
+			t.progressWorker.Finish()
 			onCompleteFn()
 		}
 
