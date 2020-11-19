@@ -1,8 +1,6 @@
 package aws
 
 import (
-
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/satori/go.uuid"
 )
@@ -42,7 +40,6 @@ func (p *Publisher) Redeliver(messages []*sqs.Message, queue string) error {
 		batch[i] = &sqs.SendMessageBatchRequestEntry{
 			Id:             messages[i].MessageId,
 			MessageBody:    messages[i].Body,
-			MessageGroupId: aws.String(p.id),
 		}
 	}
 
