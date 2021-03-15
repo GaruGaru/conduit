@@ -1,6 +1,6 @@
 module github.com/GaruGaru/conduit
 
-go 1.12
+go 1.16
 
 require (
 	github.com/aws/aws-sdk-go v1.20.6
