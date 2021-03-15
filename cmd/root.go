@@ -15,7 +15,7 @@ var (
 	nonInteractiveMode bool
 )
 
-func init () {
+func init() {
 	rootCmd.PersistentFlags().BoolVarP(&nonInteractiveMode, "non-interactive", "n", false, "Run in non interactive mode")
 }
 
