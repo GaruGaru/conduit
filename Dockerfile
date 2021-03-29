@@ -1,8 +1,8 @@
-ARG GO_VERSION=1.15
+ARG GO_VERSION=1.16
 ARG APP_NAME="conduit"
 ARG PORT=8777
 
-FROM golang:${GO_VERSION}-alpine AS builder
+FROM golang:${GO_VERSION} AS builder
 
 RUN apk add --no-cache ca-certificates git
 
